@@ -248,8 +248,9 @@ textarea:focus{border-bottom-color:var(--accent);}
 .n-tab::after{content:'';position:absolute;bottom:-1px;left:25%;width:50%;height:1px;background:var(--accent);transform:scaleX(0);transition:transform var(--T);}
 .n-tab.active{color:var(--text);}
 .n-tab.active::after{transform:scaleX(1);}
-.n-section{display:none;padding:24px 20px;}
+.n-section{display:none;}
 .n-section.active{display:block;}
+.n-section-pad{padding:24px 20px;}
 /* notes list */
 .new-note-btn{width:100%;padding:12px;margin-bottom:18px;background:var(--accent);color:var(--btn-fg);border:none;border-radius:12px;font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background var(--T),transform 0.15s;}
 .new-note-btn:hover{background:var(--accent2);transform:translateY(-1px);}
@@ -259,35 +260,83 @@ textarea:focus{border-bottom-color:var(--accent);}
 .note-card-title{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .note-card-preview{font-size:12px;color:var(--text3);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .note-card-date{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:8px;letter-spacing:0.1em;}
-/* editor */
+/* editor + view */
 .editor-view{display:none;}
 .editor-view.active{display:block;}
 #notesListView.hidden{display:none;}
-.editor-topbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+
+.note-topbar{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 20px 13px;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--bg);z-index:5;
+  transition:background var(--T),border-color var(--T);
+}
 .back-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-family:var(--font-mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;padding:4px 0;flex-shrink:0;transition:color 0.2s;}
 .back-btn:hover{color:var(--text);}
-.editor-actions{display:flex;gap:6px;margin-left:auto;}
-.del-note-btn{background:none;border:1px solid var(--border);color:var(--del);padding:5px 12px;border-radius:8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;transition:background 0.18s;}
+.note-topbar-actions{display:flex;gap:6px;margin-left:auto;}
+.del-note-btn{background:none;border:1px solid var(--border);color:var(--del);padding:6px 13px;border-radius:8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;transition:background 0.18s;}
 .del-note-btn:hover{background:var(--bg2);}
-.save-note-btn{background:var(--accent);color:var(--btn-fg);border:none;padding:5px 14px;border-radius:8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;transition:background var(--T);}
+.save-note-btn{background:var(--accent);color:var(--btn-fg);border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;transition:background var(--T);}
 .save-note-btn:hover{background:var(--accent2);}
-.note-title-input{width:100%;background:transparent;border:none;outline:none;font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--text);margin-bottom:12px;caret-color:var(--accent);}
-.note-title-input::placeholder{color:var(--text3);opacity:0.5;}
-.fmt-bar{display:flex;gap:4px;flex-wrap:wrap;padding:8px 0 10px;margin-bottom:10px;border-bottom:1px solid var(--border);}
-.fmt-btn{background:var(--surface2);border:none;color:var(--text2);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:background 0.15s,color 0.15s;font-family:var(--font-display);}
-.fmt-btn:hover{background:var(--bg2);color:var(--text);}
-.note-body{width:100%;min-height:260px;background:transparent;border:none;outline:none;resize:none;font-family:var(--font-mono);font-size:14px;line-height:1.9;color:var(--text);caret-color:var(--accent);}
-.note-body::placeholder{color:var(--text3);opacity:0.4;}
-.char-ct-note{font-family:var(--font-mono);font-size:9px;color:var(--text3);text-align:right;margin-top:6px;}
-.note-view-title{font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--text);margin-bottom:18px;line-height:1.2;}
-.note-view-body{font-family:var(--font-mono);font-size:14px;line-height:1.9;color:var(--text);word-break:break-word;}
-.note-view-body h2{font-family:var(--font-display);font-size:19px;font-weight:600;color:var(--text);margin:20px 0 8px;}
-.note-view-body h3{font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--text);margin:16px 0 6px;}
+
+/* view mode */
+.note-view-content{padding:24px 20px 40px;}
+.note-view-title{
+  font-family:var(--font-display);font-size:26px;font-weight:600;
+  color:var(--text);line-height:1.25;margin-bottom:20px;
+}
+.note-view-body{
+  font-family:var(--font-mono);font-size:14px;line-height:1.85;
+  color:var(--text2);word-break:break-word;
+}
+.note-view-body h2{
+  font-family:var(--font-display);font-size:18px;font-weight:600;
+  color:var(--text);margin:24px 0 8px;line-height:1.3;
+}
+.note-view-body h3{
+  font-family:var(--font-display);font-size:15px;font-weight:600;
+  color:var(--text);margin:18px 0 6px;line-height:1.3;
+}
+.note-view-body p{margin:0 0 12px;color:var(--text2);}
+.note-view-body p:last-child{margin-bottom:0;}
+.no-note-text{color:var(--text3)!important;font-style:italic;}
 .note-view-body strong{font-weight:700;color:var(--text);}
-.note-view-body em{font-style:italic;color:var(--text2);}
-.note-view-body s{opacity:0.45;}
-.note-view-body hr{border:none;border-top:1px solid var(--border);margin:18px 0;}
-.note-view-body p{margin-bottom:10px;}
+.note-view-body em{font-style:italic;}
+.note-view-body s{opacity:0.4;text-decoration:line-through;}
+.note-view-body hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
+
+/* edit mode */
+.note-edit-content{padding:20px 20px 40px;}
+.note-title-input{
+  width:100%;background:transparent;border:none;outline:none;
+  font-family:var(--font-display);font-size:22px;font-weight:600;
+  color:var(--text);margin-bottom:14px;caret-color:var(--accent);
+  border-bottom:1px solid transparent;
+  transition:border-color 0.2s;
+}
+.note-title-input:focus{border-bottom-color:var(--border);}
+.note-title-input::placeholder{color:var(--text3);opacity:0.5;}
+.fmt-bar{
+  display:flex;gap:4px;flex-wrap:wrap;
+  padding:8px 0;margin-bottom:12px;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+.fmt-btn{
+  background:transparent;border:none;color:var(--text3);
+  width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.15s,color 0.15s;font-family:var(--font-display);
+}
+.fmt-btn:hover{background:var(--surface2);color:var(--text);}
+.note-body{
+  width:100%;min-height:55vh;background:transparent;
+  border:none;outline:none;resize:none;
+  font-family:var(--font-mono);font-size:14px;line-height:1.85;
+  color:var(--text);caret-color:var(--accent);
+}
+.note-body::placeholder{color:var(--text3);opacity:0.4;}
+.char-ct-note{font-family:var(--font-mono);font-size:9px;color:var(--text3);text-align:right;margin-top:8px;}
 .empty-notes{text-align:center;padding:60px 20px;}
 .empty-notes h3{font-family:var(--font-display);font-size:16px;color:var(--text2);font-weight:400;margin-bottom:6px;}
 .empty-notes p{font-size:11px;color:var(--text3);letter-spacing:0.08em;}
@@ -460,7 +509,7 @@ textarea:focus{border-bottom-color:var(--accent);}
 
   <!-- notes -->
   <div class="n-section active" id="nsec-notes">
-    <div id="notesListView">
+    <div id="notesListView" class="n-section-pad">
       <button class="new-note-btn" onclick="openNewNote()">+ new note</button>
       <div class="notes-list" id="notesList"></div>
     </div>
@@ -468,36 +517,40 @@ textarea:focus{border-bottom-color:var(--accent);}
 
       <!-- VIEW MODE -->
       <div id="viewMode">
-        <div class="editor-topbar">
+        <div class="note-topbar">
           <button class="back-btn" onclick="closeEditor()">← back</button>
-          <div class="editor-actions">
+          <div class="note-topbar-actions">
             <button class="del-note-btn" onclick="deleteCurrentNote()">delete</button>
             <button class="save-note-btn" onclick="enterEditMode()">edit</button>
           </div>
         </div>
-        <div class="note-view-title" id="noteViewTitle"></div>
-        <div class="note-view-body" id="noteViewBody"></div>
+        <div class="note-view-content">
+          <div class="note-view-title" id="noteViewTitle"></div>
+          <div class="note-view-body" id="noteViewBody"></div>
+        </div>
       </div>
 
       <!-- EDIT MODE -->
       <div id="editMode" style="display:none">
-        <div class="editor-topbar">
+        <div class="note-topbar">
           <button class="back-btn" onclick="cancelEdit()">← cancel</button>
-          <div class="editor-actions">
+          <div class="note-topbar-actions">
             <button class="save-note-btn" onclick="saveCurrentNote()">save</button>
           </div>
         </div>
-        <input type="text" class="note-title-input" id="noteTitleInput" placeholder="Title…" maxlength="80">
-        <div class="fmt-bar">
-          <button class="fmt-btn" onclick="fmt('bold')"          title="Bold"><b>B</b></button>
-          <button class="fmt-btn" onclick="fmt('italic')"        title="Italic"><i>I</i></button>
-          <button class="fmt-btn" onclick="fmt('strikethrough')" title="Strike"><s>S</s></button>
-          <button class="fmt-btn" onclick="fmtHeading('## ')"    title="H1">H1</button>
-          <button class="fmt-btn" onclick="fmtHeading('### ')"   title="H2">H2</button>
-          <button class="fmt-btn" onclick="fmtLine('--- ')"      title="Divider">—</button>
+        <div class="note-edit-content">
+          <input type="text" class="note-title-input" id="noteTitleInput" placeholder="Title…" maxlength="80">
+          <div class="fmt-bar">
+            <button class="fmt-btn" onclick="fmt('bold')"          title="Bold"><b>B</b></button>
+            <button class="fmt-btn" onclick="fmt('italic')"        title="Italic"><i>I</i></button>
+            <button class="fmt-btn" onclick="fmt('strikethrough')" title="Strike"><s>S</s></button>
+            <button class="fmt-btn" onclick="fmtHeading('## ')"    title="H1">H1</button>
+            <button class="fmt-btn" onclick="fmtHeading('### ')"   title="H2">H2</button>
+            <button class="fmt-btn" onclick="fmtLine('---')"       title="Divider">—</button>
+          </div>
+          <textarea class="note-body" id="noteBody" placeholder="Start writing…" oninput="updateCharCount()"></textarea>
+          <div class="char-ct-note" id="noteCharCount">0 chars</div>
         </div>
-        <textarea class="note-body" id="noteBody" placeholder="Start writing…" rows="14" oninput="updateCharCount()"></textarea>
-        <div class="char-ct-note" id="noteCharCount">0 chars</div>
       </div>
 
     </div>
@@ -505,14 +558,14 @@ textarea:focus{border-bottom-color:var(--accent);}
 
   <!-- todo -->
   <div class="n-section" id="nsec-todo">
-    <div id="listsView">
+    <div id="listsView" class="n-section-pad">
       <div class="lists-topbar">
         <span class="lists-title">my lists</span>
         <button class="new-list-btn" onclick="openNewListModal()">+ new list</button>
       </div>
       <div class="lists-grid" id="listsGrid"></div>
     </div>
-    <div class="list-detail-view" id="listDetailView">
+    <div class="list-detail-view n-section-pad" id="listDetailView">
       <div class="list-detail-topbar">
         <button class="list-back-btn" onclick="closeListDetail()">← lists</button>
         <input class="list-detail-name" id="listDetailName" maxlength="40"
@@ -897,30 +950,34 @@ function persistNotes(){
   nSaveTimer=setTimeout(()=>cloudSet(CK_NOTES,JSON.stringify(notes)).catch(()=>{}),900);
 }
 
-/* simple markdown → html */
+/* markdown → html, clean and predictable */
 function renderMd(raw){
-  if(!raw)return'';
+  if(!raw)return'<p class="no-note-text">No content</p>';
   const lines=raw.split('\n');
-  let html='',inP=false;
-  const flushP=()=>{if(inP){html+='</p>';inP=false;}};
-  lines.forEach(line=>{
-    if(line.startsWith('## ')){flushP();html+=`<h2>${mdInline(line.slice(3))}</h2>`;return;}
-    if(line.startsWith('### ')){flushP();html+=`<h3>${mdInline(line.slice(4))}</h3>`;return;}
-    if(line.match(/^---+\s*$/)){flushP();html+='<hr>';return;}
-    if(line.trim()===''){flushP();return;}
-    if(!inP){html+='<p>';inP=true;}
-    else html+=' ';
-    html+=mdInline(line);
-  });
-  flushP();
-  return html;
+  const out=[];
+  let buf=[];
+  const flushBuf=()=>{
+    if(!buf.length)return;
+    out.push('<p>'+buf.join('<br>'+'')+'</p>');
+    buf=[];
+  };
+  for(const raw_line of lines){
+    const line=raw_line;
+    if(line.startsWith('## ')){flushBuf();out.push(`<h2>${inl(line.slice(3))}</h2>`);continue;}
+    if(line.startsWith('### ')){flushBuf();out.push(`<h3>${inl(line.slice(4))}</h3>`);continue;}
+    if(line.match(/^-{3,}\s*$/)){flushBuf();out.push('<hr>');continue;}
+    if(line.trim()===''){flushBuf();continue;}
+    buf.push(inl(line));
+  }
+  flushBuf();
+  return out.join('\n')||'<p class="no-note-text">No content</p>';
 }
-function mdInline(s){
+function inl(s){
   return s
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
     .replace(/~~(.+?)~~/g,'<s>$1</s>')
-    .replace(/_(.+?)_/g,'<em>$1</em>');
+    .replace(/(?<![a-zA-Z])_(.+?)_(?![a-zA-Z])/g,'<em>$1</em>');
 }
 
 function nTab(name){
