@@ -75,9 +75,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* ════ THEME BAR ════ */
 /* ════ THEME BUTTON ════ */
 .theme-toggle-wrap{
-  position:relative;z-index:50;
   display:flex;align-items:center;justify-content:space-between;
-  padding:12px 20px 0;
+  padding:12px 20px 0;position:relative;z-index:50;
 }
 #storageIndicator{font-family:var(--font-mono);font-size:9px;letter-spacing:0.12em;opacity:0.45;}
 .theme-toggle-btn{
@@ -93,20 +92,42 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   width:10px;height:10px;border-radius:50%;
   background:var(--accent);flex-shrink:0;transition:background var(--T);
 }
-.theme-panel{
-  position:absolute;top:calc(100% + 6px);right:20px;
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:14px;padding:14px 16px;
+
+/* overlay backdrop */
+.theme-overlay{
+  position:fixed;inset:0;z-index:200;
   display:none;
-  flex-wrap:wrap;gap:8px;
-  box-shadow:0 8px 24px rgba(0,0,0,0.12);
-  z-index:100;
+}
+.theme-overlay.open{display:block;}
+
+/* floating panel — fixed, top right, never overlaps badly */
+.theme-panel{
+  position:fixed;top:50px;right:16px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  display:none;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.18),0 2px 8px rgba(0,0,0,0.08);
+  z-index:201;
+  min-width:180px;
   transition:background var(--T),border-color var(--T);
 }
 .theme-panel.open{display:flex;}
-.th-btn{width:24px;height:24px;border-radius:50%;border:2px solid transparent;cursor:pointer;flex-shrink:0;transition:transform 0.18s,box-shadow 0.18s;position:relative;}
-.th-btn:hover{transform:scale(1.18);}
-.th-btn.active{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent);}
+.theme-panel-label{
+  font-family:var(--font-mono);font-size:9px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--text3);
+}
+.theme-panel-dots{display:flex;flex-wrap:wrap;gap:10px;}
+.th-btn{
+  width:26px;height:26px;border-radius:50%;
+  border:2px solid transparent;cursor:pointer;flex-shrink:0;
+  transition:transform 0.18s,box-shadow 0.18s;position:relative;
+}
+.th-btn:hover{transform:scale(1.2);}
+.th-btn.active{box-shadow:0 0 0 2.5px var(--bg),0 0 0 4.5px var(--accent);}
 .th-btn[data-theme="default"] {background:#C8865A;}
 .th-btn[data-theme="ash"]     {background:#5B7CE6;}
 .th-btn[data-theme="midnight"]{background:#242424;border-color:rgba(200,200,200,0.25);}
@@ -436,7 +457,11 @@ textarea:focus{border-bottom-color:var(--accent);}
   <button class="theme-toggle-btn" onclick="toggleThemePanel()">
     <span class="t-dot"></span>theme
   </button>
-  <div class="theme-panel" id="themePanel">
+</div>
+<div class="theme-overlay" id="themeOverlay" onclick="closeThemePanel()"></div>
+<div class="theme-panel" id="themePanel">
+  <div class="theme-panel-label">theme</div>
+  <div class="theme-panel-dots">
     <div class="th-btn active" data-theme="default"  onclick="setTheme('default')"></div>
     <div class="th-btn"        data-theme="ash"       onclick="setTheme('ash')"></div>
     <div class="th-btn"        data-theme="sage"      onclick="setTheme('sage')"></div>
@@ -669,12 +694,17 @@ const Storage={
 let currentTheme='default', currentSection='diary';
 
 function toggleThemePanel(){
-  document.getElementById('themePanel').classList.toggle('open');
+  const open=document.getElementById('themePanel').classList.toggle('open');
+  document.getElementById('themeOverlay').classList.toggle('open',open);
+}
+function closeThemePanel(){
+  document.getElementById('themePanel').classList.remove('open');
+  document.getElementById('themeOverlay').classList.remove('open');
 }
 document.addEventListener('click',e=>{
   const panel=document.getElementById('themePanel');
   if(!panel)return;
-  if(!e.target.closest('.theme-toggle-wrap')) panel.classList.remove('open');
+  if(!e.target.closest('.theme-toggle-wrap')&&!e.target.closest('.theme-panel'))closeThemePanel();
 });
 
 function setTheme(t,save=true){
@@ -682,7 +712,7 @@ function setTheme(t,save=true){
   if(t==='default')document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme',t);
   document.querySelectorAll('.th-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===t));
-  document.getElementById('themePanel').classList.remove('open');
+  closeThemePanel();
   if(save)persistSettings();
   applyDiaryColor(parseFloat(document.getElementById('ratingSlider').value));
 }
