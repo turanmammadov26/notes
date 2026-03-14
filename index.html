@@ -428,7 +428,7 @@ textarea:focus{border-bottom-color:var(--accent);}
 .new-list-btn{padding:8px 14px;border:none;border-radius:10px;background:var(--accent);color:var(--btn-fg);font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;transition:background var(--T),transform 0.15s;}
 .new-list-btn:hover{background:var(--accent2);transform:translateY(-1px);}
 .lists-grid{display:flex;flex-direction:column;gap:10px;}
-.list-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:box-shadow 0.2s,background var(--T);animation:fadeUp 0.18s ease;}
+.list-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:box-shadow 0.2s,background var(--T);animation:fadeUp 0.18s ease;touch-action:manipulation;}
 .list-card:hover{box-shadow:0 3px 14px rgba(0,0,0,0.07);}
 .list-card-info{flex:1;min-width:0;}
 .list-card-name{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -454,7 +454,7 @@ textarea:focus{border-bottom-color:var(--accent);}
 .todo-list{display:flex;flex-direction:column;gap:6px;}
 .todo-item{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 14px;transition:background var(--T),border-color var(--T),opacity 0.25s;animation:fadeUp 0.18s ease;}
 .todo-item.done{opacity:0.5;}
-.todo-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background var(--T),border-color var(--T);}
+.todo-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background var(--T),border-color var(--T);touch-action:manipulation;}
 .todo-item.done .todo-check{background:var(--accent);border-color:var(--accent);}
 .todo-check-inner{width:8px;height:8px;border-radius:50%;background:var(--btn-fg);opacity:0;transform:scale(0);transition:opacity 0.2s,transform 0.2s;}
 .todo-item.done .todo-check-inner{opacity:1;transform:scale(1);}
@@ -1589,7 +1589,7 @@ function renderLists(){
   if(!lists.length){grid.innerHTML=`<div class="empty-lists"><h3>No lists yet</h3><p>tap + new list to create one</p></div>`;return;}
   grid.innerHTML=lists.map(l=>{
     const total=l.items.length,done=l.items.filter(i=>i.done).length;
-    return`<div class="list-card" ontouchstart="event.preventDefault();openList('${l.id}')" onclick="openList('${l.id}')"><div class="list-card-info"><div class="list-card-name">${esc(l.name)}</div><div class="list-card-meta">${total?`${done}/${total} done`:'empty'}</div></div><button class="list-card-del" ontouchstart="event.stopPropagation();event.preventDefault();deleteList('${l.id}')" onclick="event.stopPropagation();deleteList('${l.id}')">×</button></div>`;
+    return`<div class="list-card" onclick="openList('${l.id}')"><div class="list-card-info"><div class="list-card-name">${esc(l.name)}</div><div class="list-card-meta">${total?`${done}/${total} done`:'empty'}</div></div><button class="list-card-del" onclick="event.stopPropagation();deleteList('${l.id}')">×</button></div>`;
   }).join('');
 }
 function openList(id){
@@ -1630,11 +1630,11 @@ function renderTodos(){
 }
 function todoHTML(t){
   return`<div class="todo-item ${t.done?'done':''}">
-    <div class="todo-check" ontouchstart="event.preventDefault();toggleTodo('${t.id}')" onclick="toggleTodo('${t.id}')">
+    <div class="todo-check" onclick="toggleTodo('${t.id}')">
       <div class="todo-check-inner"></div>
     </div>
     <div class="todo-text">${esc(t.text)}</div>
-    <button class="todo-del" ontouchstart="event.preventDefault();deleteTodo('${t.id}')" onclick="deleteTodo('${t.id}')">×</button>
+    <button class="todo-del" onclick="deleteTodo('${t.id}')">×</button>
   </div>`;
 }
 document.getElementById('todoInput').addEventListener('keypress',e=>{if(e.key==='Enter')addTodo();});
