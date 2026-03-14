@@ -166,12 +166,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .big-side{display:flex;flex-direction:column;gap:6px;padding-bottom:6px;}
 .big-denom{font-family:var(--font-mono);font-size:14px;color:var(--muted);}
 .big-lbl{font-size:13px;font-weight:300;font-style:italic;color:var(--muted);transition:color var(--T);}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;outline:none;cursor:pointer;margin:12px 0 8px;}
-input[type=range]::-webkit-slider-container{display:flex;align-items:center;}
-input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);border:2.5px solid var(--bg);box-shadow:0 0 0 1.5px var(--accent);cursor:pointer;margin-top:-8.5px;transition:background var(--T);}
-input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent);border:2.5px solid var(--bg);box-shadow:0 0 0 1.5px var(--accent);cursor:pointer;transition:background var(--T);}
-input[type=range]::-moz-range-track{height:3px;border-radius:2px;}
+/* ════ SLIDER ════ */
+.slider-wrap{position:relative;width:100%;height:44px;display:flex;align-items:center;cursor:pointer;margin-bottom:4px;}
+.slider-track{position:absolute;left:0;right:0;height:3px;border-radius:2px;background:var(--border);overflow:hidden;}
+.slider-fill{height:100%;border-radius:2px;background:var(--accent);transition:width 0.05s,background var(--T);}
+.slider-thumb{position:absolute;width:22px;height:22px;border-radius:50%;background:var(--accent);border:3px solid var(--bg);box-shadow:0 0 0 1.5px var(--accent);transform:translateX(-50%);transition:background var(--T),box-shadow var(--T);pointer-events:none;top:50%;margin-top:-11px;}
+input[type=range]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0;padding:0;-webkit-appearance:none;appearance:none;}
 .slider-marks{display:flex;justify-content:space-between;}
 .slider-marks span{font-family:var(--font-mono);font-size:9px;color:var(--muted);}
 .divider{height:1px;background:var(--border);margin:26px 0;transition:background var(--T);}
@@ -585,7 +585,11 @@ textarea:focus{border-bottom-color:var(--accent);}
         <div class="big-lbl" id="ratingLabel">good</div>
       </div>
     </div>
-    <input type="range" id="ratingSlider" min="1" max="10" step="0.5" value="7">
+    <div class="slider-wrap" id="sliderWrap">
+      <div class="slider-track"><div class="slider-fill" id="sliderFill"></div></div>
+      <div class="slider-thumb" id="sliderThumb"></div>
+      <input type="range" id="ratingSlider" min="1" max="10" step="0.5" value="7">
+    </div>
     <div class="slider-marks"><span>1</span><span>3</span><span>5</span><span>7</span><span>10</span></div>
     <div class="divider"></div>
     <div class="lbl">note</div>
@@ -1010,6 +1014,15 @@ function dTab(name){
 
 document.getElementById('dateDisplay').textContent=`${DAYS_EN[nowD.getDay()]}, ${nowD.getDate()} ${MONTHS_EN[nowD.getMonth()]} ${nowD.getFullYear()}`;
 
+function syncSliderUI(val){
+  const min=1,max=10;
+  const pct=(val-min)/(max-min)*100;
+  const fill=document.getElementById('sliderFill');
+  const thumb=document.getElementById('sliderThumb');
+  if(fill) fill.style.width=pct+'%';
+  if(thumb) thumb.style.left=pct+'%';
+}
+
 const slider=document.getElementById('ratingSlider');
 const ratingNum=document.getElementById('ratingNum');
 const ratingLbl=document.getElementById('ratingLabel');
@@ -1017,7 +1030,7 @@ const noteArea=document.getElementById('noteArea');
 const charCount=document.getElementById('charCount');
 const saveBtn=document.getElementById('saveBtn');
 
-slider.addEventListener('input',()=>{const v=parseFloat(slider.value);ratingNum.textContent=fmtR(v);ratingLbl.textContent=LABELS[v]||'';applyDiaryColor(v);});
+slider.addEventListener('input',()=>{const v=parseFloat(slider.value);ratingNum.textContent=fmtR(v);ratingLbl.textContent=LABELS[v]||'';applyDiaryColor(v);syncSliderUI(v);});
 noteArea.addEventListener('input',()=>{charCount.textContent=noteArea.value.length;});
 saveBtn.addEventListener('click',async()=>{
   if(!diaryReady)return;
@@ -1685,7 +1698,7 @@ saveBtn.disabled=true;saveBtn.textContent='loading…';
   // diary
   diaryEntries=await loadAllEntries();
   const te=diaryEntries.find(e=>e.date===todayKey);
-  if(te){slider.value=te.rating;noteArea.value=te.note||'';charCount.textContent=(te.note||'').length;ratingNum.textContent=fmtR(te.rating);ratingLbl.textContent=LABELS[te.rating]||'';}
+  if(te){slider.value=te.rating;noteArea.value=te.note||'';charCount.textContent=(te.note||'').length;ratingNum.textContent=fmtR(te.rating);ratingLbl.textContent=LABELS[te.rating]||'';syncSliderUI(te.rating);}
 
   // notes
   let notesRaw=null;
@@ -1702,6 +1715,7 @@ saveBtn.disabled=true;saveBtn.textContent='loading…';
   setTheme(currentTheme,false);
   applyFont(currentFont,false);
   applyDiaryColor(parseFloat(slider.value));
+  syncSliderUI(parseFloat(slider.value));
   applyModules(false);
   switchSection(currentSection);
   renderHabits();
