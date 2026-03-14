@@ -1579,6 +1579,23 @@ function persistLists(){
   clearTimeout(lSaveTimer);
   lSaveTimer=setTimeout(()=>cloudSet(CK_LISTS,JSON.stringify(lists)).catch(()=>{}),900);
 }
+let _touchStartY=0, _touchStartX=0, _touchMoved=false;
+function listTouchStart(e, id){
+  _touchStartY=e.touches[0].clientY;
+  _touchStartX=e.touches[0].clientX;
+  _touchMoved=false;
+}
+function listTouchMove(e){
+  const dy=Math.abs(e.touches[0].clientY-_touchStartY);
+  const dx=Math.abs(e.touches[0].clientX-_touchStartX);
+  if(dy>6||dx>6) _touchMoved=true;
+}
+function listTouchEnd(e, id){
+  if(_touchMoved) return; // was scrolling — ignore
+  e.preventDefault();
+  openList(id);
+}
+
 function renderLists(){
   // always make sure lists view is visible and detail is hidden when rendering list
   if(!currentListId){
@@ -1589,7 +1606,7 @@ function renderLists(){
   if(!lists.length){grid.innerHTML=`<div class="empty-lists"><h3>No lists yet</h3><p>tap + new list to create one</p></div>`;return;}
   grid.innerHTML=lists.map(l=>{
     const total=l.items.length,done=l.items.filter(i=>i.done).length;
-    return`<div class="list-card" onclick="openList('${l.id}')"><div class="list-card-info"><div class="list-card-name">${esc(l.name)}</div><div class="list-card-meta">${total?`${done}/${total} done`:'empty'}</div></div><button class="list-card-del" onclick="event.stopPropagation();deleteList('${l.id}')">×</button></div>`;
+    return`<div class="list-card" ontouchstart="listTouchStart(event,'${l.id}')" ontouchmove="listTouchMove(event)" ontouchend="listTouchEnd(event,'${l.id}')" onclick="openList('${l.id}')"><div class="list-card-info"><div class="list-card-name">${esc(l.name)}</div><div class="list-card-meta">${total?`${done}/${total} done`:'empty'}</div></div><button class="list-card-del" onclick="event.stopPropagation();deleteList('${l.id}')">×</button></div>`;
   }).join('');
 }
 function openList(id){
