@@ -30,10 +30,12 @@
 [data-theme="nothing"] {--bg:#000;--bg2:#0d0000;--surface:rgba(255,255,255,0.02);--surface2:rgba(255,30,30,0.04);--border:rgba(255,0,0,0.12);--text:#f0f0f0;--text2:#888;--text3:#555;--accent:#ff3333;--accent2:#cc0000;--btn-fg:#fff;--done:#ff3333;--today-ring:#ff3333;--del:#ff3333;--arch:#888;--month-col:#ff3333;--muted:#3a3a3a;--glow:rgba(255,30,30,0.08);}
 
 /* ════ BASE ════ */
-html,body{height:100%;overflow:hidden;}body{
+html{height:100%;overflow:hidden;}
+body{
   font-family:var(--font-mono);
   background:var(--bg);color:var(--text);
-  min-height:100%;overflow-x:hidden;
+  height:100%;overflow:hidden;
+  display:flex;flex-direction:column;
   -webkit-user-select:none;user-select:none;
   transition:background var(--T),color var(--T);
   position:relative;
@@ -43,15 +45,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 [data-theme="nothing"]::after{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.035) 1px,transparent 1px);background-size:20px 20px;pointer-events:none;z-index:0;}
 
 /* ════ SECTIONS ════ */
-/* scroll fix */
-.app-section{display:none;position:relative;z-index:1;overflow-y:auto;overflow-x:hidden;
-  height:calc(100vh - 64px);
-}
+.sections-wrap{flex:1;min-height:0;overflow:hidden;position:relative;}
+.app-section{display:none;position:absolute;inset:0;z-index:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
 .app-section.active{display:block;}
 
 /* ════ BOTTOM NAV ════ */
 .bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;height:64px;
+  flex-shrink:0;height:56px;
   background:var(--surface);border-top:1px solid var(--border);
   display:flex;align-items:stretch;z-index:100;
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
@@ -77,6 +77,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* ════ THEME BAR ════ */
 /* ════ THEME BUTTON ════ */
 .theme-toggle-wrap{
+  flex-shrink:0;
   display:flex;align-items:center;justify-content:space-between;
   padding:12px 20px 0;position:relative;z-index:50;
 }
@@ -204,8 +205,7 @@ textarea:focus{border-bottom-color:var(--accent);}
 /* ════════════════════════
    TRACKER STYLES
 ════════════════════════ */
-#section-tracker{max-width:720px;margin:0 auto;padding:0 16px 20px;}
-/* tracker controls */
+#section-tracker{max-width:720px;margin:0 auto;padding:0 0 20px;}/* tracker controls */
 #section-tracker{max-width:720px;margin:0 auto;padding:0 0 20px;}
 .tracker-top{padding:32px 24px 20px;}
 .tracker-note-wrap{margin-top:4px;}
@@ -360,10 +360,11 @@ textarea:focus{border-bottom-color:var(--accent);}
 
 /* editor page — fullscreen inside the section */
 .note-editor-page{
-  position:absolute;inset:0;
+  position:absolute;top:0;left:0;right:0;bottom:0;
   background:var(--bg);
   z-index:20;
   overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
   transition:background var(--T);
 }
 .note-topbar{
@@ -551,6 +552,7 @@ textarea:focus{border-bottom-color:var(--accent);}
 </div>
 
 <!-- ══════════ DIARY ══════════ -->
+<div class="sections-wrap">
 <div class="app-section active" id="section-diary">
   <nav class="d-tabs">
     <button class="d-tab active" data-dtab="today" onclick="dTab('today')">today</button>
@@ -621,95 +623,92 @@ textarea:focus{border-bottom-color:var(--accent);}
 <!-- ══════════ NOTES ══════════ -->
 <div class="app-section" id="section-notes">
 
-  <!-- notes -->
-  <div class="n-section active" id="nsec-notes">
-
-    <!-- LIST VIEW -->
-    <div id="notesListView">
-      <div class="notes-header">
-        <button class="notes-tab active" id="notesViewActive"   onclick="setNotesView('active')">notes</button>
-        <button class="notes-tab"        id="notesViewArchive"  onclick="setNotesView('archive')">archive</button>
-        <button class="notes-tab"        id="notesViewTodo"     onclick="setNotesView('todo')">to-do</button>
-        <button class="notes-new-btn"    id="notesNewBtn"       onclick="openNewNote()">+ new</button>
-      </div>
-      <div id="notesNotesList">
-        <div class="n-section-pad" style="padding-top:14px;">
-          <div class="notes-search-wrap">
-            <input class="notes-search" id="notesSearch" type="text" placeholder="search…" oninput="renderNotesList()">
-          </div>
-          <div class="notes-tags-wrap" id="notesTagsWrap"></div>
-          <div class="notes-list" id="notesList"></div>
-        </div>
-      </div>
-      <div id="notesTodoSection" style="display:none;">
-        <div id="listsView" class="n-section-pad">
-          <div class="lists-topbar">
-            <span class="lists-title">my lists</span>
-            <button class="new-list-btn" onclick="openNewListModal()">+ new list</button>
-          </div>
-          <div class="lists-grid" id="listsGrid"></div>
-        </div>
-        <div class="list-detail-view n-section-pad" id="listDetailView">
-          <div class="list-detail-topbar">
-            <button class="list-back-btn" onclick="closeListDetail()">&#8592; lists</button>
-            <input class="list-detail-name" id="listDetailName" maxlength="40"
-              onblur="renameCurrentList()" onkeypress="if(event.key==='Enter')this.blur()">
-          </div>
-          <div class="todo-add-row">
-            <input type="text" class="todo-input" id="todoInput" placeholder="Add item&#8230;" maxlength="120">
-            <button class="todo-add-btn" onclick="addTodo()">+ add</button>
-          </div>
-          <div id="todoContent"></div>
-        </div>
-      </div>
-
-    <!-- EDITOR (fullscreen layer) -->
-    <div class="note-editor-page" id="editorView" style="display:none;">
-
-      <!-- VIEW MODE -->
-      <div id="viewMode">
-        <div class="note-topbar">
-          <button class="back-btn" onclick="closeEditor()">← back</button>
-          <div class="note-topbar-actions">
-            <button class="del-note-btn" onclick="deleteCurrentNote()">delete</button>
-            <button class="del-note-btn" id="archiveNoteBtn" onclick="archiveCurrentNote()">archive</button>
-            <button class="save-note-btn" onclick="enterEditMode()">edit</button>
-          </div>
-        </div>
-        <div class="note-view-content">
-          <div class="note-view-title" id="noteViewTitle"></div>
-          <div class="note-view-tags" id="noteViewTags"></div>
-          <div class="note-view-body" id="noteViewBody"></div>
-        </div>
-      </div>
-
-      <!-- EDIT MODE -->
-      <div id="editMode" style="display:none">
-        <div class="note-topbar">
-          <button class="back-btn" onclick="cancelEdit()">← cancel</button>
-          <div class="note-topbar-actions">
-            <button class="save-note-btn" onclick="saveCurrentNote()">save</button>
-          </div>
-        </div>
-        <div class="note-edit-content">
-          <input type="text" class="note-title-input" id="noteTitleInput" placeholder="Title…" maxlength="80">
-          <input type="text" class="note-tags-input" id="noteTagsInput" placeholder="tags: work, ideas, personal…" maxlength="100" oninput="suggestTags(this)" autocomplete="off">
-          <div class="tag-suggestions" id="tagSuggestions"></div>
-          <div class="fmt-bar">
-            <button class="fmt-btn" onclick="fmt('bold')"          title="Bold"><b>B</b></button>
-            <button class="fmt-btn" onclick="fmt('italic')"        title="Italic"><i>I</i></button>
-            <button class="fmt-btn" onclick="fmt('strikethrough')" title="Strike"><s>S</s></button>
-            <button class="fmt-btn" onclick="fmtHeading('## ')"    title="H1">H1</button>
-            <button class="fmt-btn" onclick="fmtHeading('### ')"   title="H2">H2</button>
-            <button class="fmt-btn" onclick="fmtLine('---')"       title="Divider">—</button>
-            <button class="fmt-btn" onclick="fmtTodo()"            title="Todo item">☐</button>
-          </div>
-          <textarea class="note-body" id="noteBody" placeholder="Start writing…" oninput="updateCharCount()" onkeydown="handleNoteKeydown(event)"></textarea>
-          <div class="char-ct-note" id="noteCharCount">0 chars</div>
-        </div>
-      </div>
-
+  <!-- LIST VIEW -->
+  <div id="notesListView">
+    <div class="notes-header">
+      <button class="notes-tab active" id="notesViewActive"   onclick="setNotesView('active')">notes</button>
+      <button class="notes-tab"        id="notesViewArchive"  onclick="setNotesView('archive')">archive</button>
+      <button class="notes-tab"        id="notesViewTodo"     onclick="setNotesView('todo')">to-do</button>
+      <button class="notes-new-btn"    id="notesNewBtn"       onclick="openNewNote()">+ new</button>
     </div>
+    <div id="notesNotesList">
+      <div class="n-section-pad" style="padding-top:14px;">
+        <div class="notes-search-wrap">
+          <input class="notes-search" id="notesSearch" type="text" placeholder="search…" oninput="renderNotesList()">
+        </div>
+        <div class="notes-tags-wrap" id="notesTagsWrap"></div>
+        <div class="notes-list" id="notesList"></div>
+      </div>
+    </div>
+    <div id="notesTodoSection" style="display:none;">
+      <div id="listsView" class="n-section-pad">
+        <div class="lists-topbar">
+          <span class="lists-title">my lists</span>
+          <button class="new-list-btn" onclick="openNewListModal()">+ new list</button>
+        </div>
+        <div class="lists-grid" id="listsGrid"></div>
+      </div>
+      <div class="list-detail-view n-section-pad" id="listDetailView">
+        <div class="list-detail-topbar">
+          <button class="list-back-btn" onclick="closeListDetail()">&#8592; lists</button>
+          <input class="list-detail-name" id="listDetailName" maxlength="40"
+            onblur="renameCurrentList()" onkeypress="if(event.key==='Enter')this.blur()">
+        </div>
+        <div class="todo-add-row">
+          <input type="text" class="todo-input" id="todoInput" placeholder="Add item&#8230;" maxlength="120">
+          <button class="todo-add-btn" onclick="addTodo()">+ add</button>
+        </div>
+        <div id="todoContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDITOR — sits alongside list, not inside it -->
+  <div class="note-editor-page" id="editorView" style="display:none;">
+
+    <!-- VIEW MODE -->
+    <div id="viewMode">
+      <div class="note-topbar">
+        <button class="back-btn" onclick="closeEditor()">← back</button>
+        <div class="note-topbar-actions">
+          <button class="del-note-btn" onclick="deleteCurrentNote()">delete</button>
+          <button class="del-note-btn" id="archiveNoteBtn" onclick="archiveCurrentNote()">archive</button>
+          <button class="save-note-btn" onclick="enterEditMode()">edit</button>
+        </div>
+      </div>
+      <div class="note-view-content">
+        <div class="note-view-title" id="noteViewTitle"></div>
+        <div class="note-view-tags" id="noteViewTags"></div>
+        <div class="note-view-body" id="noteViewBody"></div>
+      </div>
+    </div>
+
+    <!-- EDIT MODE -->
+    <div id="editMode" style="display:none">
+      <div class="note-topbar">
+        <button class="back-btn" onclick="cancelEdit()">← cancel</button>
+        <div class="note-topbar-actions">
+          <button class="save-note-btn" onclick="saveCurrentNote()">save</button>
+        </div>
+      </div>
+      <div class="note-edit-content">
+        <input type="text" class="note-title-input" id="noteTitleInput" placeholder="Title…" maxlength="80">
+        <input type="text" class="note-tags-input" id="noteTagsInput" placeholder="tags: work, ideas, personal…" maxlength="100" oninput="suggestTags(this)" autocomplete="off">
+        <div class="tag-suggestions" id="tagSuggestions"></div>
+        <div class="fmt-bar">
+          <button class="fmt-btn" onclick="fmt('bold')"          title="Bold"><b>B</b></button>
+          <button class="fmt-btn" onclick="fmt('italic')"        title="Italic"><i>I</i></button>
+          <button class="fmt-btn" onclick="fmt('strikethrough')" title="Strike"><s>S</s></button>
+          <button class="fmt-btn" onclick="fmtHeading('## ')"    title="H1">H1</button>
+          <button class="fmt-btn" onclick="fmtHeading('### ')"   title="H2">H2</button>
+          <button class="fmt-btn" onclick="fmtLine('---')"       title="Divider">—</button>
+          <button class="fmt-btn" onclick="fmtTodo()"            title="Todo item">☐</button>
+        </div>
+        <textarea class="note-body" id="noteBody" placeholder="Start writing…" oninput="updateCharCount()" onkeydown="handleNoteKeydown(event)"></textarea>
+        <div class="char-ct-note" id="noteCharCount">0 chars</div>
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -757,6 +756,7 @@ textarea:focus{border-bottom-color:var(--accent);}
 </div>
 
 <!-- ══════════ BOTTOM NAV ══════════ -->
+</div><!-- /sections-wrap -->
 <nav class="bottom-nav">
   <button class="nav-btn active" id="nav-diary"    onclick="switchSection('diary')">
     <span class="nav-label">diary</span>
@@ -905,15 +905,25 @@ function toggleModule(name){
   applyModules(true);
 }
 function switchSection(name, save=true){
+  // if leaving notes while editor is open — close it cleanly
+  if(currentSection==='notes' && name!=='notes'){
+    document.getElementById('editorView').style.display='none';
+    document.getElementById('notesListView').style.display='';
+    editingNoteId=null;
+  }
   currentSection=name;
   document.querySelectorAll('.app-section').forEach(s=>s.classList.toggle('active',s.id==='section-'+name));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.id==='nav-'+name));
-  // highlight gear when in settings
   const gear=document.querySelector('.gear-btn');
   if(gear) gear.style.color = name==='settings' ? 'var(--accent)' : '';
   if(name==='diary'&&document.getElementById('dtab-month').classList.contains('active'))renderCal();
   if(name==='tracker')renderHabits();
-  if(name==='notes'){renderNotesList();}
+  if(name==='notes'){
+    // always show list when entering notes
+    document.getElementById('editorView').style.display='none';
+    document.getElementById('notesListView').style.display='';
+    renderNotesList();
+  }
   if(name==='settings') renderFontGrid();
   if(save) persistSettings();
 }
