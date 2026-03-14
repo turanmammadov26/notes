@@ -30,8 +30,7 @@
 [data-theme="nothing"] {--bg:#000;--bg2:#0d0000;--surface:rgba(255,255,255,0.02);--surface2:rgba(255,30,30,0.04);--border:rgba(255,0,0,0.12);--text:#f0f0f0;--text2:#888;--text3:#555;--accent:#ff3333;--accent2:#cc0000;--btn-fg:#fff;--done:#ff3333;--today-ring:#ff3333;--del:#ff3333;--arch:#888;--month-col:#ff3333;--muted:#3a3a3a;--glow:rgba(255,30,30,0.08);}
 
 /* ════ BASE ════ */
-html,body{height:100%;}
-body{
+html,body{height:100%;overflow:hidden;}body{
   font-family:var(--font-mono);
   background:var(--bg);color:var(--text);
   min-height:100%;overflow-x:hidden;
@@ -44,7 +43,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 [data-theme="nothing"]::after{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.035) 1px,transparent 1px);background-size:20px 20px;pointer-events:none;z-index:0;}
 
 /* ════ SECTIONS ════ */
-.app-section{display:none;position:relative;z-index:1;}
+/* scroll fix */
+html,body{height:100%;overflow:hidden;}
+.app-section{display:none;position:relative;z-index:1;overflow-y:auto;overflow-x:hidden;
+  height:calc(100vh - 56px); /* subtract nav height */
+}
 .app-section.active{display:block;}
 
 /* ════ BOTTOM NAV ════ */
@@ -287,37 +290,76 @@ textarea:focus{border-bottom-color:var(--accent);}
 .n-tab.active::after{transform:scaleX(1);}
 .n-section{display:none;}
 .n-section.active{display:block;}
-.n-section-pad{padding:24px 20px;}
+.n-section-pad{padding:16px 20px 40px;}
+
+/* notes list header */
+.notes-header{
+  display:flex;align-items:center;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--bg);z-index:10;
+  transition:background var(--T),border-color var(--T);
+  padding:0 20px;
+}
+.notes-tabs{display:flex;flex:1;}
+.notes-tab{
+  padding:15px 0;margin-right:20px;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--muted);background:none;border:none;cursor:pointer;
+  position:relative;transition:color var(--T);white-space:nowrap;
+}
+.notes-tab::after{content:'';position:absolute;bottom:-1px;left:0;width:100%;height:1px;background:var(--accent);transform:scaleX(0);transition:transform var(--T);}
+.notes-tab.active{color:var(--text);}
+.notes-tab.active::after{transform:scaleX(1);}
+.notes-new-btn{
+  margin-left:auto;flex-shrink:0;
+  background:var(--accent);color:var(--btn-fg);border:none;
+  border-radius:8px;padding:6px 14px;
+  font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;
+  cursor:pointer;transition:background var(--T);
+}
+.notes-new-btn:hover{opacity:0.88;}
+
 /* notes list */
-.new-note-btn{width:100%;padding:12px;margin-bottom:18px;background:var(--accent);color:var(--btn-fg);border:none;border-radius:12px;font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background var(--T),transform 0.15s;}
-.new-note-btn:hover{background:var(--accent2);transform:translateY(-1px);}
 .notes-list{display:flex;flex-direction:column;gap:10px;}
 .note-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;transition:box-shadow 0.2s,background var(--T),border-color var(--T);animation:fadeUp 0.2s ease;}
 .note-card:hover{box-shadow:0 3px 14px rgba(0,0,0,0.07);}
 .note-card-title{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .note-card-preview{font-size:12px;color:var(--text3);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .note-card-date{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:8px;letter-spacing:0.1em;}
-/* editor + view */
-.editor-view{display:none;}
-.editor-view.active{display:block;}
-.notes-list-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
-.notes-view-btn{background:none;border:none;cursor:pointer;font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);padding:4px 0;position:relative;transition:color 0.18s;}
-.notes-view-btn::after{content:'';position:absolute;bottom:-2px;left:0;width:100%;height:1px;background:var(--accent);transform:scaleX(0);transition:transform 0.2s;}
-.notes-view-btn.active{color:var(--text);}
-.notes-view-btn.active::after{transform:scaleX(1);}
-.notes-view-btn:last-of-type{margin-right:auto;}
-/* inline todo in rendered notes */
+
+/* search */
+.notes-search-wrap{margin-bottom:10px;}
+.notes-search{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 14px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none;transition:border-color 0.2s,background var(--T);}
+.notes-search:focus{border-color:var(--accent);}
+.notes-search::placeholder{color:var(--muted);}
+
+/* tags */
+.notes-tags-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;min-height:0;}
+.tag-pill{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-family:var(--font-mono);font-size:9px;letter-spacing:0.1em;text-transform:lowercase;color:var(--text2);cursor:pointer;transition:background 0.18s,border-color 0.18s,color 0.18s;}
+.tag-pill:hover{border-color:var(--accent);color:var(--accent);}
+.tag-pill.active{background:var(--accent);border-color:var(--accent);color:var(--btn-fg);}
+.note-tags-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text2);font-family:var(--font-mono);font-size:11px;padding:6px 0 8px;outline:none;margin-bottom:4px;transition:border-color var(--T);}
+.note-tags-input::placeholder{color:var(--muted);}
+.note-tags-input:focus{border-color:var(--accent);}
+.note-view-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
+.note-view-tag{background:var(--surface2);border-radius:20px;padding:3px 10px;font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;}
+
+/* inline todo */
 .note-todo-item{display:flex;align-items:flex-start;gap:10px;margin:4px 0;cursor:pointer;}
-.note-todo-cb{
-  width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border);
-  flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;
-  transition:background 0.18s,border-color 0.18s;
-}
+.note-todo-cb{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:background 0.18s,border-color 0.18s;}
 .note-todo-item.done .note-todo-cb{background:var(--accent);border-color:var(--accent);}
 .note-todo-item.done .note-todo-cb::after{content:'✓';font-size:11px;color:#fff;line-height:1;}
 .note-todo-item.done .note-todo-text{color:var(--muted);text-decoration:line-through;}
 .note-todo-text{font-size:14px;color:var(--text);line-height:1.6;}
 
+/* editor page — fullscreen inside the section */
+.note-editor-page{
+  position:absolute;inset:0;
+  background:var(--bg);
+  z-index:20;
+  overflow-y:auto;
+  transition:background var(--T);
+}
 .note-topbar{
   display:flex;align-items:center;gap:10px;
   padding:14px 20px 13px;
@@ -329,28 +371,15 @@ textarea:focus{border-bottom-color:var(--accent);}
 .back-btn:hover{color:var(--text);}
 .note-topbar-actions{display:flex;gap:6px;margin-left:auto;}
 .del-note-btn{background:none;border:1px solid var(--border);color:var(--del);padding:6px 13px;border-radius:8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;transition:background 0.18s;}
-.del-note-btn:hover{background:var(--bg2);}
+.del-note-btn:hover{background:var(--surface2);}
 .save-note-btn{background:var(--accent);color:var(--btn-fg);border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;transition:background var(--T);}
-.save-note-btn:hover{background:var(--accent2);}
 
 /* view mode */
-.note-view-content{padding:24px 20px 40px;}
-.note-view-title{
-  font-family:var(--font-display);font-size:26px;font-weight:600;
-  color:var(--text);line-height:1.25;margin-bottom:20px;
-}
-.note-view-body{
-  font-family:var(--font-mono);font-size:14px;line-height:1.85;
-  color:var(--text2);word-break:break-word;
-}
-.note-view-body h2{
-  font-family:var(--font-display);font-size:18px;font-weight:600;
-  color:var(--text);margin:24px 0 8px;line-height:1.3;
-}
-.note-view-body h3{
-  font-family:var(--font-display);font-size:15px;font-weight:600;
-  color:var(--text);margin:18px 0 6px;line-height:1.3;
-}
+.note-view-content{padding:24px 20px 40px;max-width:560px;margin:0 auto;}
+.note-view-title{font-family:var(--font-display);font-size:26px;font-weight:600;color:var(--text);line-height:1.25;margin-bottom:20px;}
+.note-view-body{font-family:var(--font-mono);font-size:14px;line-height:1.85;color:var(--text2);word-break:break-word;}
+.note-view-body h2{font-family:var(--font-display);font-size:18px;font-weight:600;color:var(--text);margin:24px 0 8px;line-height:1.3;}
+.note-view-body h3{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text);margin:18px 0 6px;line-height:1.3;}
 .note-view-body p{margin:0 0 12px;color:var(--text2);}
 .note-view-body p:last-child{margin-bottom:0;}
 .no-note-text{color:var(--text3)!important;font-style:italic;}
@@ -360,34 +389,14 @@ textarea:focus{border-bottom-color:var(--accent);}
 .note-view-body hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
 
 /* edit mode */
-.note-edit-content{padding:20px 20px 40px;}
-.note-title-input{
-  width:100%;background:transparent;border:none;outline:none;
-  font-family:var(--font-display);font-size:22px;font-weight:600;
-  color:var(--text);margin-bottom:14px;caret-color:var(--accent);
-  border-bottom:1px solid transparent;
-  transition:border-color 0.2s;
-}
+.note-edit-content{padding:20px 20px 40px;max-width:560px;margin:0 auto;}
+.note-title-input{width:100%;background:transparent;border:none;outline:none;font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--text);margin-bottom:14px;caret-color:var(--accent);border-bottom:1px solid transparent;transition:border-color 0.2s;}
 .note-title-input:focus{border-bottom-color:var(--border);}
 .note-title-input::placeholder{color:var(--text3);opacity:0.5;}
-.fmt-bar{
-  display:flex;gap:4px;flex-wrap:wrap;
-  padding:8px 0;margin-bottom:12px;
-  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-}
-.fmt-btn{
-  background:transparent;border:none;color:var(--text3);
-  width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:13px;
-  display:flex;align-items:center;justify-content:center;
-  transition:background 0.15s,color 0.15s;font-family:var(--font-display);
-}
+.fmt-bar{display:flex;gap:4px;flex-wrap:wrap;padding:8px 0;margin-bottom:12px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.fmt-btn{background:transparent;border:none;color:var(--text3);width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:background 0.15s,color 0.15s;font-family:var(--font-display);}
 .fmt-btn:hover{background:var(--surface2);color:var(--text);}
-.note-body{
-  width:100%;min-height:55vh;background:transparent;
-  border:none;outline:none;resize:none;
-  font-family:var(--font-mono);font-size:14px;line-height:1.85;
-  color:var(--text);caret-color:var(--accent);
-}
+.note-body{width:100%;min-height:55vh;background:transparent;border:none;outline:none;resize:none;font-family:var(--font-mono);font-size:14px;line-height:1.85;color:var(--text);caret-color:var(--accent);}
 .note-body::placeholder{color:var(--text3);opacity:0.4;}
 .char-ct-note{font-family:var(--font-mono);font-size:9px;color:var(--text3);text-align:right;margin-top:8px;}
 .empty-notes{text-align:center;padding:60px 20px;}
@@ -607,17 +616,30 @@ textarea:focus{border-bottom-color:var(--accent);}
     <button class="n-tab"        data-ntab="todo"  onclick="nTab('todo')">to-do</button>
   </nav>
 
+
   <!-- notes -->
   <div class="n-section active" id="nsec-notes">
-    <div id="notesListView" class="n-section-pad">
-      <div class="notes-list-header">
-        <button class="notes-view-btn active" id="notesViewActive" onclick="setNotesView('active')">notes</button>
-        <button class="notes-view-btn"        id="notesViewArchive" onclick="setNotesView('archive')">archive</button>
-        <button class="new-note-btn" onclick="openNewNote()">+ new</button>
+
+    <!-- LIST VIEW -->
+    <div id="notesListView">
+      <div class="notes-header">
+        <nav class="notes-tabs">
+          <button class="notes-tab active" id="notesViewActive" onclick="setNotesView('active')">notes</button>
+          <button class="notes-tab" id="notesViewArchive" onclick="setNotesView('archive')">archive</button>
+        </nav>
+        <button class="notes-new-btn" onclick="openNewNote()">+ new</button>
       </div>
-      <div class="notes-list" id="notesList"></div>
+      <div class="n-section-pad" style="padding-top:14px;">
+        <div class="notes-search-wrap">
+          <input class="notes-search" id="notesSearch" type="text" placeholder="search…" oninput="renderNotesList()">
+        </div>
+        <div class="notes-tags-wrap" id="notesTagsWrap"></div>
+        <div class="notes-list" id="notesList"></div>
+      </div>
     </div>
-    <div class="editor-view" id="editorView">
+
+    <!-- EDITOR (fullscreen layer) -->
+    <div class="note-editor-page" id="editorView" style="display:none;">
 
       <!-- VIEW MODE -->
       <div id="viewMode">
@@ -631,6 +653,7 @@ textarea:focus{border-bottom-color:var(--accent);}
         </div>
         <div class="note-view-content">
           <div class="note-view-title" id="noteViewTitle"></div>
+          <div class="note-view-tags" id="noteViewTags"></div>
           <div class="note-view-body" id="noteViewBody"></div>
         </div>
       </div>
@@ -645,6 +668,7 @@ textarea:focus{border-bottom-color:var(--accent);}
         </div>
         <div class="note-edit-content">
           <input type="text" class="note-title-input" id="noteTitleInput" placeholder="Title…" maxlength="80">
+          <input type="text" class="note-tags-input" id="noteTagsInput" placeholder="tags: work, ideas, personal…" maxlength="100">
           <div class="fmt-bar">
             <button class="fmt-btn" onclick="fmt('bold')"          title="Bold"><b>B</b></button>
             <button class="fmt-btn" onclick="fmt('italic')"        title="Italic"><i>I</i></button>
@@ -1229,55 +1253,70 @@ function fmtTodo(){
   ta.selectionEnd=lineStart+wrapped.length;
   ta.focus();
 }
+function nTab(name){
   document.querySelectorAll('.n-tab').forEach(t=>t.classList.toggle('active',t.dataset.ntab===name));
   document.querySelectorAll('.n-section').forEach(s=>s.classList.toggle('active',s.id==='nsec-'+name));
   if(name==='notes')renderNotesList();
   if(name==='todo')renderLists();
 }
 
-let notesView='active';
+let notesView='active', activeTag='';
 
 function setNotesView(v){
   notesView=v;
+  activeTag='';
   document.getElementById('notesViewActive').classList.toggle('active',v==='active');
   document.getElementById('notesViewArchive').classList.toggle('active',v==='archive');
   renderNotesList();
 }
 
-function renderNotesList(){
-  const list=document.getElementById('notesList');
-  const filtered=notes.filter(n=>notesView==='archive'?n.archived:!n.archived);
-  const sorted=[...filtered].sort((a,b)=>b.updatedAt-a.updatedAt);
-  if(!sorted.length){
-    const msg=notesView==='archive'?'Archive is empty':'No notes yet';
-    const sub=notesView==='archive'?'Archived notes appear here':'tap + new to start';
-    list.innerHTML=`<div class="empty-notes"><h3>${msg}</h3><p>${sub}</p></div>`;return;
-  }
-  list.innerHTML=sorted.map(n=>`<div class="note-card" onclick="openNote('${n.id}')">
-    <div class="note-card-title">${esc(n.title||'Untitled')}</div>
-    <div class="note-card-preview">${esc(n.body.replace(/[#\-*_~\[\]]/g,'').slice(0,80))}</div>
-    <div class="note-card-date">${fmtDate(n.updatedAt)}</div>
-  </div>`).join('');
+function renderNotesTags(filtered){
+  const wrap=document.getElementById('notesTagsWrap');
+  if(!wrap)return;
+  const allTags=[...new Set(filtered.flatMap(n=>n.tags||[]))].sort();
+  if(!allTags.length){wrap.innerHTML='';return;}
+  wrap.innerHTML=allTags.map(t=>`<button class="tag-pill${activeTag===t?' active':''}" onclick="filterByTag('${esc(t)}')">#${esc(t)}</button>`).join('');
 }
 
-function archiveCurrentNote(){
-  const n=notes.find(n=>n.id===editingNoteId);if(!n)return;
-  n.archived=!n.archived;
-  persistNotes();
-  closeEditor();
+function filterByTag(tag){
+  activeTag=activeTag===tag?'':tag;
   renderNotesList();
+}
+
+function renderNotesList(){
+  const list=document.getElementById('notesList');
+  const q=(document.getElementById('notesSearch')?.value||'').toLowerCase().trim();
+  let filtered=notes.filter(n=>notesView==='archive'?n.archived:!n.archived);
+  renderNotesTags(filtered);
+  if(activeTag) filtered=filtered.filter(n=>(n.tags||[]).includes(activeTag));
+  if(q) filtered=filtered.filter(n=>(n.title||'').toLowerCase().includes(q)||(n.body||'').toLowerCase().includes(q));
+  const sorted=[...filtered].sort((a,b)=>b.updatedAt-a.updatedAt);
+  if(!sorted.length){
+    const msg=q?'No results':notesView==='archive'?'Archive is empty':'No notes yet';
+    const sub=q?'Try a different search':notesView==='archive'?'Archived notes appear here':'tap + new to start';
+    list.innerHTML=`<div class="empty-notes"><h3>${msg}</h3><p>${sub}</p></div>`;return;
+  }
+  list.innerHTML=sorted.map(n=>{
+    const tags=(n.tags||[]).map(t=>`<span class="note-view-tag">#${esc(t)}</span>`).join('');
+    return`<div class="note-card" onclick="openNote('${n.id}')">
+      <div class="note-card-title">${esc(n.title||'Untitled')}</div>
+      ${tags?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px;">${tags}</div>`:''}
+      <div class="note-card-preview">${esc(n.body.replace(/[#\-*_~\[\]]/g,'').slice(0,80))}</div>
+      <div class="note-card-date">${fmtDate(n.updatedAt)}</div>
+    </div>`;
+  }).join('');
 }
 
 function openNewNote(){
   editingNoteId='new_'+Date.now();
   document.getElementById('noteTitleInput').value='';
+  document.getElementById('noteTagsInput').value='';
   document.getElementById('noteBody').value='';
   document.getElementById('noteCharCount').textContent='0 chars';
-  document.getElementById('notesListView').classList.add('hidden');
-  document.getElementById('editorView').classList.add('active');
-  // new notes go straight to edit
   document.getElementById('viewMode').style.display='none';
   document.getElementById('editMode').style.display='block';
+  document.getElementById('notesListView').style.display='none';
+  document.getElementById('editorView').style.display='block';
   setTimeout(()=>document.getElementById('noteBody').focus(),100);
 }
 
@@ -1285,17 +1324,20 @@ function openNote(id){
   const n=notes.find(n=>n.id===id);if(!n)return;
   editingNoteId=id;
   document.getElementById('noteViewTitle').textContent=n.title||'';
+  const tagsEl=document.getElementById('noteViewTags');
+  if(tagsEl) tagsEl.innerHTML=(n.tags||[]).map(t=>`<span class="note-view-tag">#${esc(t)}</span>`).join('');
   document.getElementById('noteViewBody').innerHTML=renderMd(n.body||'',id);
   document.getElementById('archiveNoteBtn').textContent=n.archived?'unarchive':'archive';
   document.getElementById('viewMode').style.display='block';
   document.getElementById('editMode').style.display='none';
-  document.getElementById('notesListView').classList.add('hidden');
-  document.getElementById('editorView').classList.add('active');
+  document.getElementById('notesListView').style.display='none';
+  document.getElementById('editorView').style.display='block';
 }
 
 function enterEditMode(){
   const n=notes.find(n=>n.id===editingNoteId);if(!n)return;
   document.getElementById('noteTitleInput').value=n.title||'';
+  document.getElementById('noteTagsInput').value=(n.tags||[]).join(', ');
   document.getElementById('noteBody').value=n.body||'';
   updateCharCount();
   document.getElementById('viewMode').style.display='none';
@@ -1304,41 +1346,48 @@ function enterEditMode(){
 }
 
 function cancelEdit(){
-  // if new note with nothing — just go back
   if(editingNoteId&&editingNoteId.startsWith('new_')){closeEditor();return;}
-  // else go back to view mode
   const n=notes.find(n=>n.id===editingNoteId);if(!n){closeEditor();return;}
   document.getElementById('noteViewTitle').textContent=n.title||'';
-  document.getElementById('noteViewBody').innerHTML=renderMd(n.body||'');
+  const tagsEl=document.getElementById('noteViewTags');
+  if(tagsEl) tagsEl.innerHTML=(n.tags||[]).map(t=>`<span class="note-view-tag">#${esc(t)}</span>`).join('');
+  document.getElementById('noteViewBody').innerHTML=renderMd(n.body||'',n.id);
   document.getElementById('editMode').style.display='none';
   document.getElementById('viewMode').style.display='block';
 }
 
 function closeEditor(){
-  document.getElementById('notesListView').classList.remove('hidden');
-  document.getElementById('editorView').classList.remove('active');
+  document.getElementById('editorView').style.display='none';
+  document.getElementById('notesListView').style.display='';
   editingNoteId=null;
   renderNotesList();
+}
+
+function parseTags(raw){
+  return raw.split(',').map(t=>t.trim().toLowerCase().replace(/[^a-zа-яё0-9_-]/gi,'')).filter(Boolean);
 }
 
 function saveCurrentNote(){
   const title=document.getElementById('noteTitleInput').value.trim();
   const body=document.getElementById('noteBody').value;
+  const tags=parseTags(document.getElementById('noteTagsInput').value);
   if(!title&&!body.trim()){showToast('nothing to save');return;}
   if(editingNoteId&&editingNoteId.startsWith('new_')){
     const id=String(Date.now());
-    notes.push({id,title,body,updatedAt:Date.now()});
+    notes.push({id,title,body,tags,updatedAt:Date.now()});
     editingNoteId=id;
   }else{
     const n=notes.find(n=>n.id===editingNoteId);
-    if(n){n.title=title;n.body=body;n.updatedAt=Date.now();}
+    if(n){n.title=title;n.body=body;n.tags=tags;n.updatedAt=Date.now();}
   }
   persistNotes();showToast('saved');
-  // switch to view mode after save
   const n=notes.find(n=>n.id===editingNoteId);
   if(n){
     document.getElementById('noteViewTitle').textContent=n.title||'';
-    document.getElementById('noteViewBody').innerHTML=renderMd(n.body||'');
+    const tagsEl=document.getElementById('noteViewTags');
+    if(tagsEl) tagsEl.innerHTML=(n.tags||[]).map(t=>`<span class="note-view-tag">#${esc(t)}</span>`).join('');
+    document.getElementById('archiveNoteBtn').textContent=n.archived?'unarchive':'archive';
+    document.getElementById('noteViewBody').innerHTML=renderMd(n.body||'',n.id);
     document.getElementById('editMode').style.display='none';
     document.getElementById('viewMode').style.display='block';
   }else{closeEditor();}
@@ -1348,6 +1397,12 @@ function deleteCurrentNote(){
   if(!editingNoteId||editingNoteId.startsWith('new_')){closeEditor();return;}
   if(!confirm('Delete this note?'))return;
   notes=notes.filter(n=>n.id!==editingNoteId);
+  persistNotes();closeEditor();
+}
+
+function archiveCurrentNote(){
+  const n=notes.find(n=>n.id===editingNoteId);if(!n)return;
+  n.archived=!n.archived;
   persistNotes();closeEditor();
 }
 
