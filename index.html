@@ -293,26 +293,36 @@ textarea:focus{border-bottom-color:var(--accent);}
 
 /* notes list header */
 .notes-header{
-  display:flex;align-items:center;gap:0;
+  display:flex;align-items:center;gap:10px;
   border-bottom:1px solid var(--border);
   position:sticky;top:0;background:var(--bg);z-index:10;
   padding:0 20px;
   transition:background var(--T),border-color var(--T);
 }
+.notes-main-tabs{display:flex;align-items:center;gap:6px;margin-right:auto;}
 .notes-tab{
   padding:15px 14px 15px 0;
-  font-family:var(--font-mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;
+  font-family:var(--font-display);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--muted);background:none;border:none;cursor:pointer;
   position:relative;transition:color var(--T);white-space:nowrap;
 }
 .notes-tab::after{content:'';position:absolute;bottom:-1px;left:0;width:calc(100% - 14px);height:1px;background:var(--accent);transform:scaleX(0);transition:transform var(--T);}
 .notes-tab.active{color:var(--text);}
 .notes-tab.active::after{transform:scaleX(1);}
+.notes-archive-tag{
+  background:none;border:1px solid var(--border);
+  border-radius:20px;padding:3px 10px;
+  font-family:var(--font-display);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--text3);cursor:pointer;
+  transition:background 0.18s,border-color 0.18s,color 0.18s;
+}
+.notes-archive-tag:hover{border-color:var(--accent);color:var(--accent);}
+.notes-archive-tag.active{background:var(--accent);border-color:var(--accent);color:var(--btn-fg);}
 .notes-new-btn{
-  margin-left:auto;flex-shrink:0;
+  flex-shrink:0;
   background:var(--accent);color:var(--btn-fg);border:none;
   border-radius:8px;padding:6px 14px;
-  font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;
+  font-family:var(--font-display);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;
   cursor:pointer;transition:background var(--T),opacity 0.15s;
 }
 .notes-new-btn:hover{opacity:0.85;}
@@ -626,10 +636,11 @@ textarea:focus{border-bottom-color:var(--accent);}
   <!-- LIST VIEW -->
   <div id="notesListView">
     <div class="notes-header">
-      <button class="notes-tab active" id="notesViewActive"   onclick="setNotesView('active')">notes</button>
-      <button class="notes-tab"        id="notesViewArchive"  onclick="setNotesView('archive')">archive</button>
-      <button class="notes-tab"        id="notesViewTodo"     onclick="setNotesView('todo')">to-do</button>
-      <button class="notes-new-btn"    id="notesNewBtn"       onclick="openNewNote()">+ new</button>
+      <div class="notes-main-tabs">
+        <button class="notes-tab active" id="notesViewActive" onclick="setNotesView('active')">notes</button>
+        <button class="notes-tab" id="notesViewTodo" onclick="setNotesView('todo')">to-do</button>
+      </div>
+      <button class="notes-new-btn" id="notesNewBtn" onclick="openNewNote()">+ new</button>
     </div>
     <div id="notesNotesList">
       <div class="n-section-pad" style="padding-top:14px;">
@@ -1343,14 +1354,19 @@ function nTab(name){
 
 let notesView='active', activeTag='';
 
+function toggleArchiveView(){
+  setNotesView(notesView==='archive' ? 'active' : 'archive');
+}
+
 function setNotesView(v){
   notesView=v;
-  // update tab highlights
-  ['active','archive','todo'].forEach(id=>{
-    const btn=document.getElementById('notesView'+id.charAt(0).toUpperCase()+id.slice(1));
-    if(btn) btn.classList.toggle('active', id===v);
-  });
-  // show/hide new button (not relevant for todo which has its own add)
+  // notes tab active when not on todo
+  const activeBtn=document.getElementById('notesViewActive');
+  if(activeBtn) activeBtn.classList.toggle('active', v!=='todo');
+  // todo tab
+  const todoBtn=document.getElementById('notesViewTodo');
+  if(todoBtn) todoBtn.classList.toggle('active', v==='todo');
+  // show/hide new button
   const newBtn=document.getElementById('notesNewBtn');
   if(newBtn) newBtn.style.display=v==='todo'?'none':'';
   // show correct content
@@ -1363,9 +1379,13 @@ function setNotesView(v){
 function renderNotesTags(filtered){
   const wrap=document.getElementById('notesTagsWrap');
   if(!wrap)return;
-  const allTags=[...new Set(filtered.flatMap(n=>n.tags||[]))].sort();
-  if(!allTags.length){wrap.innerHTML='';return;}
-  wrap.innerHTML=allTags.map(t=>`<button class="tag-pill${activeTag===t?' active':''}" onclick="filterByTag('${esc(t)}')">#${esc(t)}</button>`).join('');
+  // collect tags from ALL notes so they never disappear when archiving
+  const allTags=[...new Set(notes.flatMap(n=>n.tags||[]))].sort();
+  const archiveActive=notesView==='archive';
+  const archivePill=`<button class="tag-pill${archiveActive?' active':''}" id="notesViewArchive" onclick="toggleArchiveView()">archive</button>`;
+  if(!allTags.length){wrap.innerHTML=archivePill;return;}
+  const tagPills=allTags.map(t=>`<button class="tag-pill${activeTag===t?' active':''}" onclick="filterByTag('${esc(t)}')">#${esc(t)}</button>`).join('');
+  wrap.innerHTML=archivePill+tagPills;
 }
 
 function filterByTag(tag){
