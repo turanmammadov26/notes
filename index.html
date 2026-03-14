@@ -204,6 +204,8 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
 }
 .todo-view-toggle:hover{border-color:var(--accent);color:var(--accent);}
 .todo-view-toggle.active{background:var(--accent);border-color:var(--accent);color:var(--btn-fg);}
+
+.todo-controls-row{display:flex;gap:8px;margin-bottom:14px;}
 .matrix-hint{font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;margin-bottom:12px;text-align:center;}
 .eisenhower-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
 .matrix-quadrant{
@@ -240,12 +242,20 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
 .mq-item{
   background:var(--surface2);border-radius:8px;padding:7px 10px;
   font-family:var(--font-mono);font-size:11px;color:var(--text2);
-  cursor:pointer;transition:background 0.15s;
-  display:flex;align-items:center;gap:6px;
+  display:flex;align-items:center;gap:8px;
+  transition:background 0.15s;
 }
 .mq-item:hover{background:var(--bg2);}
-.mq-item.done{opacity:0.4;text-decoration:line-through;}
-.mq-item-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.mq-item.done{opacity:0.4;}
+.mq-item.done .mq-item-text{text-decoration:line-through;}
+.mq-check{
+  width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border);
+  flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background 0.15s,border-color 0.15s;color:var(--btn-fg);
+}
+.mq-item.done .mq-check{background:var(--accent);border-color:var(--accent);}
+.mq-item-text{flex:1;cursor:pointer;line-height:1.4;}
+.mq-item-text:hover{color:var(--text);}
 .mq-empty{font-family:var(--font-mono);font-size:9px;color:var(--text3);opacity:0.4;font-style:italic;padding:4px 0;}
 .mq-inline-wrap{margin-bottom:4px;}
 .mq-inline-input{
@@ -975,8 +985,12 @@ textarea:focus{border-bottom-color:var(--accent);}
           <button class="list-back-btn" onclick="closeListDetail()">&#8592; lists</button>
           <input class="list-detail-name" id="listDetailName" maxlength="40"
             onblur="renameCurrentList()" onkeypress="if(event.key==='Enter')this.blur()">
-          <button class="todo-view-toggle" id="todoViewToggle" onclick="toggleTodoView()">matrix</button>
           <button class="list-delete-btn" onclick="deleteCurrentList()">delete</button>
+        </div>
+
+        <!-- controls row — always visible -->
+        <div class="todo-controls-row">
+          <button class="todo-view-toggle" id="todoViewToggle" onclick="toggleTodoView()">matrix</button>
         </div>
 
         <!-- LIST VIEW -->
@@ -998,7 +1012,6 @@ textarea:focus{border-bottom-color:var(--accent);}
 
         <!-- MATRIX VIEW -->
         <div id="todoMatrixView" style="display:none;">
-          <div class="matrix-hint">hold to drag · tap to change quadrant · + to add</div>
           <div class="eisenhower-grid">
             <div class="matrix-quadrant q1" id="mq1" ondragover="mqDragOver(event,1)" ondrop="mqDrop(event,1)" ondragleave="mqDragLeave(event)">
               <div class="mq-header"><span class="mq-icon">🔴</span><div><div class="mq-title">Do First</div><div class="mq-sub">urgent + important</div></div><button class="mq-add-btn" onclick="mqAddItem(1)">+</button></div>
@@ -1017,6 +1030,7 @@ textarea:focus{border-bottom-color:var(--accent);}
               <div class="mq-items" id="mq-items-4"></div>
             </div>
           </div>
+          <div id="matrixDoneSection"></div>
         </div>
       </div>
     </div>
@@ -1236,68 +1250,6 @@ function renderFontGrid(){
 }
 
 
-
-/* ════ SWIPE GESTURES ════ */
-(()=>{
-  const SECT=['diary','tracker','notes'];
-  let tx=0,ty=0,moved=false;
-
-  function getEnabled(){
-    return SECT.filter(s=>modules[s]!==false);
-  }
-
-  document.addEventListener('touchstart',e=>{
-    tx=e.touches[0].clientX;
-    ty=e.touches[0].clientY;
-    moved=false;
-  },{passive:true});
-
-  document.addEventListener('touchmove',()=>{moved=true;},{passive:true});
-
-  document.addEventListener('touchend',e=>{
-    if(!moved)return;
-    const dx=e.changedTouches[0].clientX-tx;
-    const dy=e.changedTouches[0].clientY-ty;
-    const adx=Math.abs(dx),ady=Math.abs(dy);
-    if(Math.max(adx,ady)<40)return;
-
-    // horizontal — switch sections
-    if(adx>ady&&adx>60){
-      if(e.target.closest('.note-editor-page,.cal-grid'))return;
-      if(e.target.closest('input,textarea'))return;
-      const en=getEnabled();
-      const idx=en.indexOf(currentSection);
-      if(idx===-1)return;
-      if(dx<0&&idx<en.length-1){switchSection(en[idx+1]);swipeHint(en[idx+1]);}
-      else if(dx>0&&idx>0){switchSection(en[idx-1]);swipeHint(en[idx-1]);}
-      return;
-    }
-
-    // vertical — hide/show nav (bottom position only)
-    if(ady>adx&&ady>50&&navPosition!=='side'){
-      const collapsed=document.body.classList.contains('nav-collapsed');
-      if(dy<0&&ty>window.innerHeight*0.75&&collapsed){
-        document.body.classList.remove('nav-collapsed');
-      } else if(dy>0&&ty>window.innerHeight*0.75&&!collapsed){
-        document.body.classList.add('nav-collapsed');
-      }
-    }
-  },{passive:true});
-
-  function swipeHint(name){
-    let el=document.getElementById('swipeHint');
-    if(!el){
-      el=document.createElement('div');
-      el.id='swipeHint';
-      el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:14px;padding:10px 22px;font-family:var(--font-mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text2);z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.2s;';
-      document.body.appendChild(el);
-    }
-    el.textContent=name;
-    el.style.opacity='1';
-    clearTimeout(el._t);
-    el._t=setTimeout(()=>el.style.opacity='0',600);
-  }
-})();
 
 function applyModules(save=true){
   const names=['diary','tracker','notes'];
@@ -2066,7 +2018,9 @@ function closeModal(){document.getElementById('newListModal').classList.remove('
 function closeModalOutside(e){if(e.target===document.getElementById('newListModal'))closeModal();}
 function confirmNewList(){const name=document.getElementById('newListName').value.trim();if(!name){document.getElementById('newListName').focus();return;}lists.push({id:String(Date.now()),name,items:[]});persistLists();closeModal();renderLists();}
 let todoPrioFilter='all';
-let todoViewMode='list'; // 'list' or 'matrix'
+let todoViewMode='list';
+let showDoneTasks=false;
+
 
 // quadrant mapping: 1=do first, 2=schedule, 3=delegate, 4=eliminate
 const QUAD_INFO={
@@ -2126,16 +2080,35 @@ function renderMatrix(){
     const el=document.getElementById('mq-items-'+q);if(!el)return;
     const items=l.items.filter(t=>!t.done&&prioToQuad(t.priority||'none')===q);
     if(!items.length){el.innerHTML=`<div class="mq-empty">empty</div>`;return;}
-    const qi=QUAD_INFO[q];
     el.innerHTML=items.map(t=>`
-      <div class="mq-item${t.done?' done':''}" draggable="true" data-id="${t.id}"
-        onclick="showUnifiedPicker('${t.id}')"
+      <div class="mq-item" draggable="true" data-id="${t.id}"
         ondragstart="mqItemDragStart(event,'${t.id}')"
         ondragend="mqItemDragEnd(event)">
-        <div class="mq-item-dot" style="background:${qi.color}"></div>
-        <span>${esc(t.text)}</span>
+        <div class="mq-check" onclick="toggleTodo('${t.id}')"></div>
+        <span class="mq-item-text" onclick="showUnifiedPicker('${t.id}')">${esc(t.text)}</span>
       </div>`).join('');
   });
+
+  // done section below grid
+  const doneEl=document.getElementById('matrixDoneSection');
+  if(!doneEl)return;
+  const done=l.items.filter(t=>t.done);
+  if(!done.length){doneEl.innerHTML='';return;}
+  doneEl.innerHTML=`
+    <div class="todo-section-lbl">done <span class="todo-count-badge">${done.length}</span></div>
+    <div class="todo-list">
+      ${done.map(t=>`
+        <div class="todo-item done">
+          <div class="todo-check" onclick="toggleTodo('${t.id}')">
+            <div class="todo-check-inner"></div>
+          </div>
+          <div class="todo-text">${esc(t.text)}</div>
+          <div class="todo-item-actions">
+            <button class="todo-del" onclick="deleteTodo('${t.id}')">×</button>
+          </div>
+        </div>`).join('')}
+    </div>
+    <button class="todo-clear-btn" onclick="clearDone()">clear done</button>`;
 }
 
 /* ─ Matrix drag between quadrants ─ */
